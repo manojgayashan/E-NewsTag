@@ -1,33 +1,33 @@
 {
   "project_info": {
-    "project_number": "981866627104",
-    "project_id": "e-news-tag-4076e",
-    "storage_bucket": "e-news-tag-4076e.appspot.com"
+    "project_number": "658659601132",
+    "project_id": "e-newstag",
+    "storage_bucket": "e-newstag.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:981866627104:android:1dc90192ad0ff320e17c45",
+        "mobilesdk_app_id": "1:658659601132:android:d2e1223c91ee43385513c9",
         "android_client_info": {
           "package_name": "com.satasme.enewstag"
         }
       },
       "oauth_client": [
         {
-          "client_id": "981866627104-oih18j4hsst67rggd6mdq8k486iesm2l.apps.googleusercontent.com",
+          "client_id": "658659601132-rmqk186lihtpnf4he5bvqh1foovvla4a.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyBwaFyOUR1Si6G79-tPrSM6Ph31EOFBAOc"
+          "current_key": "AIzaSyA9OtU84V5pLMP8ftHp7oCwT_DGCOGSo-Y"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "981866627104-oih18j4hsst67rggd6mdq8k486iesm2l.apps.googleusercontent.com",
+              "client_id": "658659601132-rmqk186lihtpnf4he5bvqh1foovvla4a.apps.googleusercontent.com",
               "client_type": 3
             }
           ]

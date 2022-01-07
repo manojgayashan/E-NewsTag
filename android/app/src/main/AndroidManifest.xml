@@ -26,6 +26,9 @@
       <meta-data android:name="com.dieam.reactnativepushnotification.notification_channel_name" android:value="enewstag"/>
       <meta-data android:name="com.dieam.reactnativepushnotification.notification_channel_description" android:value="enewstag application"/>
       <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/>
+      <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@mipmap/ic_notification_foreground" />
+
+      <!-- <meta-data android:name="com.facebook.sdk.ApplicationId" android:value="@string/facebook_app_id"/> -->
       <activity android:name="com.facebook.react.devsupport.DevSettingsActivity" />
       <!-- Change the value to true to enable pop-up for in foreground on receiving remote notifications (for prevent duplicating while showing local notifications set this to false) -->
         <meta-data  android:name="com.dieam.reactnativepushnotification.notification_foreground"

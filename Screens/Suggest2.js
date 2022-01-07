@@ -49,6 +49,7 @@ export default function Suggest2() {
       const value = await AsyncStorage.getItem('lang');
       if(value !== null) {
         setLanguage(value);
+        // getData(value)
       }
     } catch(e) {
     }
@@ -56,12 +57,12 @@ export default function Suggest2() {
 
   const getData = () => {
     fetch(
-      'https://enewstag.com/api/news/',
+      'https://enewstag.com/api/suggest/'+lang.lang,
     )
       .then((response) => response.json())
-      .then((json) => setData(json))
+      .then((json) => lang.setSData(json))
       .catch((error) => {setError(true)})
-      .finally(() => {setLoading(false);});
+      .finally(() => {setLoading(false)});
     setRefreshing(false);
     
   };
@@ -112,9 +113,9 @@ export default function Suggest2() {
   useEffect(() => {
     getLanguageData();
     getCategoryData()
-    getData();
+    // getData();
     return () => {
-      getData();
+      // getData();
       getLanguageData();
       getCategoryData()
     }
@@ -155,6 +156,15 @@ function setNewsCategory(input) {
   else if (input=='8'){
     return 'Sports';
   }
+  else if (input=='12'){
+    return 'Weather';
+  }
+  else if (input=='13'){
+    return 'COVID-19';
+  }
+  else if (input=='14'){
+    return 'Local';
+  }
 }
 
   return (
@@ -171,7 +181,7 @@ function setNewsCategory(input) {
         </TouchableOpacity>
         </ScrollView>
         :
-      isLoading && data.length == 0 ? (
+      lang.isLoading || lang.sdata.length == 0 ? (
         <View style={{flex:1,justifyContent:'center',alignItems:'center'}}
         //  animation={'fadeIn'} duration={400}
         // onLayout={()=>{getData();setData(reverseArr(data))}}
@@ -234,18 +244,14 @@ function setNewsCategory(input) {
           }}>
           <FlatList
             refreshing={true}
-            data={data}
+            data={lang.sdata}
             keyExtractor={({id}, index) => id}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
-            renderItem={({item}) => (
-              lang.lang==item.language && item.status == 'A'?
-              catData.map((cat)=>
-              cat.id==item.category_id && item.views >1?
+            renderItem={({item,index}) => (
+               index<=20?
               <View>
-                {/* {cat.category} */}
-                {/* <Text>{cat.category}</Text> */}
               <TouchableHighlight
                 style={{padding: 0}}
                 underlayColor="#DDDDDD"
@@ -268,7 +274,7 @@ function setNewsCategory(input) {
                       </View>
                       <View style={{alignSelf:'flex-end',width:windowWidth - 135,flexDirection:'row',justifyContent: 'space-between'}}>
                         <Text style={styles.innerText}>| {setNewsCategory(item.category_id)}</Text>
-                        <Text style={styles.innerText}>{item.datetime==null?'':Moment(item.datetime).format('D MMM yyyy')}</Text>
+                        <Text style={styles.innerText}>{item.datetime==null?'':Moment(item.datetime).format('D MMM yyyy HH:m')}</Text>
                       </View>
                     </View>
                     
@@ -276,12 +282,10 @@ function setNewsCategory(input) {
                 </View>
               </TouchableHighlight>
               </View>
+              
               :
-null
-              
-              )
-              
-              :null
+              null
+              // <Text>h</Text>
               // getData()null
               
             )}

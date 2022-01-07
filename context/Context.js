@@ -8,6 +8,9 @@ export const UserProvider = ({ children }) => {
 
   const [lang, setLanguage] = useState("English");
   const [cat, setCategory] = useState("");
+
+  
+  const [token, setToken] = useState("");
   
   const [catBack, setCatBack] = useState(false);
 
@@ -16,6 +19,13 @@ export const UserProvider = ({ children }) => {
   const [logdata, setLogData] = useState([]);
   
   const [sub, setSub] = useState([]);
+
+  
+  const [data, setData] = useState([]);
+
+  const [sdata, setSData] = useState([]);
+  
+  const [pdata, setPData] = useState([]);
 
   const [userInfo, setUserInfo] = useState([]);
   const [logged, setLogged] = useState('');
@@ -27,31 +37,72 @@ export const UserProvider = ({ children }) => {
   const [theme, setTheme] = useState("light");
   const [breaking, setBreaking] = useState([]);
   const [filtedData, setFilltedData] = useState([]);
+
   
-  const [loading, setLoading] = useState();
+  const [pic, setPic] = useState("");
   
-  const [id, setId] = useState("");
+  const [isLoading, setLoading] = useState();
+  
+  const [id, setId] = useState([]);
 
   const [logMail, setLogMail] = useState([]);
   const [logdet, setLogDet] = useState('');
+
   const getLanguageData = async () => {
     try {
       const value = await AsyncStorage.getItem('lang');
       if(value !== null) {
-        setLanguage(value);
-        // getLastBreaking(value);
-        console.log(value)
+        setLanguage(value)
+        getFirst(value)
+        // getData(value)
+
       }
       if(value == null) {
         setLanguage('English');
-        // getLastBreaking('English');
+        getFirst('English')
+        // getData('English')
+        storeLanguage('English')
       }
+      console.log("ddddddddddddddddddddddddddf"+value)
     } catch(e) {
       // error reading value
     }
   };
 
-  const getData = async () => {
+  const getFirst = (language) => { 
+    lang.setLoading(true)
+    fetch(
+      'https://enewstag.com/api/first/'+language,
+    )
+      .then((response) => response.json())
+      .then((json) => setId(json))
+      .catch((error) => {setError(true)})
+      .finally(() => {setLoading(false);});
+    // setRefreshing(false);
+  };
+
+  const getData = (language) => {   
+    setLoading(true)
+    fetch(
+      'https://enewstag.com/api/latestNews/'+language,
+    )
+      .then((response) => response.json())
+      .then((json) => setData(json))
+      .catch((error) => {setError(true)})
+      .finally(() => {setLoading(false);});
+    setRefreshing(false);
+  };
+
+
+  const storeLanguage = async (value) => {
+    try {
+      await AsyncStorage.setItem('lang', value)
+    } catch (e) {
+      // saving error
+    }
+  }
+
+  const getUserData = async () => {
     try {
       const jsonValue = await AsyncStorage.getItem('userInfo')
       return jsonValue != null ? 
@@ -98,7 +149,7 @@ const getAccount = async () => {
 
   useEffect(() => {
     getLanguageData();  
-    getData();  
+    getUserData();  
     getAccount();
     // getNewsData();
     // getLastBreaking()
@@ -142,7 +193,21 @@ const getAccount = async () => {
         sub,
         setSub,
         filtedData,
-        setFilltedData
+        setFilltedData,
+        id,
+        setId,
+        isLoading,
+        setLoading,
+        data,
+        setData,
+        sdata,
+        setSData,
+        pdata,
+        setPData,
+        pic,
+        setPic,
+        token,
+        setToken
       }}
     >
       {children}

@@ -28,6 +28,8 @@ export default function News() {
   const [isLoading, setLoading] = useState(true);
   const [data, setData] = useState([]);
   const [catData, setCatData] = useState([]);
+  
+  const [sub, setSub] = useState([]);
 
   const [refreshing, setRefreshing] = React.useState(false);
   const [language, setLanguage] = useState();
@@ -42,8 +44,20 @@ export default function News() {
     getData();
     setError(false);
     setLoading(true);
+    // getBreaking()
   };
-
+  
+  // function getBreaking() {
+  //   // getData()
+  //   var filted = new Array()
+  //   data.map((item,index) => {
+  //     lang.lang==item.language && item.type =='Breaking_News' && item.status=='A'?(
+  //       filted.push(item)
+  //     ):(null)
+  //   })
+  //   lang.setBreaking(filted.pop());
+  //   // console.log(filted.pop())
+  // }
   const getLanguageData = async () => {
     try {
       const value = await AsyncStorage.getItem('lang');
@@ -72,6 +86,24 @@ export default function News() {
     )
       .then((response) => response.json())
       .then((json) => setCatData(json))
+      .catch((error) => {setError(true)})
+      .finally(() => {setLoading(false);});
+    setRefreshing(false);
+    
+  };
+  const getSubscribeData = () => {
+    fetch(
+      'https://enewstag.com/api/subscribe/',
+    )
+      .then((response) => response.json())
+      .then((json) => 
+      json.map((item)=>
+      item.email==lang.logdata.email?
+      [setSub(item),console.log(item)]:null
+      )
+      // setSub(json)
+      
+      )
       .catch((error) => {setError(true)})
       .finally(() => {setLoading(false);});
     setRefreshing(false);
@@ -113,11 +145,12 @@ export default function News() {
     getLanguageData();
     getCategoryData()
     getData();
-    return () => {
-      getData();
-      getLanguageData();
-      getCategoryData()
-    }
+    getSubscribeData()
+    // return () => {
+    //   getData();
+    //   getLanguageData();
+    //   getCategoryData()
+    // }
     // setData(reverseArr(data))
     
   }, []);
@@ -155,8 +188,16 @@ function setNewsCategory(input) {
   else if (input=='8'){
     return 'Sports';
   }
+  else if (input=='12'){
+    return 'Weather';
+  }
+  else if (input=='13'){
+    return 'COVID-19';
+  }
+  else if (input=='14'){
+    return 'Local';
+  }
 }
-
   return (
     <View style={styles.containerInner}>
       {error == true?
@@ -232,20 +273,27 @@ function setNewsCategory(input) {
             justifyContent: 'space-between',
             paddingHorizontal: 0,
           }}>
-          <FlatList
+
+            <ScrollView nestedScrollEnabled={true}>
+              {catData.map((cat)=>
+              <View>
+             
+          
+              
+            <FlatList
             refreshing={true}
-            data={data}
+            data={data.sort(function (x, y) {return y.views - x.views;})}
             keyExtractor={({id}, index) => id}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
-            renderItem={({item}) => (
-              lang.lang==item.language && item.status == 'A'?
-              catData.map((cat)=>
-              cat.id==item.category_id && item.views >1?
-              <View>
+            renderItem={({item,index}) => (
+              lang.lang==item.language && item.status == 'A' && cat.id == item.category_id && index<=100?
+         
+              <View >
                 {/* {cat.category} */}
                 {/* <Text>{cat.category}</Text> */}
+
               <TouchableHighlight
                 style={{padding: 0}}
                 underlayColor="#DDDDDD"
@@ -268,7 +316,7 @@ function setNewsCategory(input) {
                       </View>
                       <View style={{alignSelf:'flex-end',width:windowWidth - 135,flexDirection:'row',justifyContent: 'space-between'}}>
                         <Text style={styles.innerText}>| {setNewsCategory(item.category_id)}</Text>
-                        <Text style={styles.innerText}>{item.datetime==null?'':Moment(item.datetime).format('D MMM yyyy')}</Text>
+                        <Text style={styles.innerText}>{item.datetime==null?'':Moment(item.datetime).format('D MMM yyyy HH:m') }</Text>
                       </View>
                     </View>
                     
@@ -276,16 +324,17 @@ function setNewsCategory(input) {
                 </View>
               </TouchableHighlight>
               </View>
-              :
-null
-              
-              )
+            
               
               :null
               // getData()null
               
             )}
           />
+          </View>
+              )}
+            </ScrollView>
+          
         </View>
       )}
     </View>

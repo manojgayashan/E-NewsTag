@@ -11,6 +11,7 @@ import Search from './Search'
 import Login from './Login'
 import Advertise from './Advertise'
 import Category from './Category'
+import HomeScreen from './HomeScreen'
 
 const Stack = createStackNavigator();
 
@@ -44,40 +45,11 @@ function MyStack() {
     
   return (
 
-    // logged==''?
 
-    // <Stack.Navigator initialRouteName={'Login'}>
-    //   <Stack.Screen
-    //     name="Login"
-    //     component={Login}
-    //     options={{headerShown: false}} 
-    //   />
-    //   <Stack.Screen
-    //     name="News"
-    //     component={News}
-    //     options={{headerShown: false}}
-    //   />
-    //   <Stack.Screen
-    //     name="Single"
-    //     component={Single}
-    //     options={{headerShown: false}}
-    //   />
-    //   <Stack.Screen
-    //     name="Home"
-    //     component={Home}
-    //     options={{headerShown: false}}
-    //   />
-    //   <Stack.Screen
-    //     name="Search"
-    //     component={Search}
-    //     options={{headerShown: false}}
-    //   />
-    // </Stack.Navigator>
-    // :
     <Stack.Navigator initialRouteName={'Home'}>
        <Stack.Screen
         name="Home"
-        component={Home}
+        component={HomeScreen}
         options={{headerShown: false}}
         />
       <Stack.Screen

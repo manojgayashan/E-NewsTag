@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
   container2: {
     paddingTop:20,
     flex: 1,
-    backgroundColor: '#eaeaea',
+    backgroundColor: 'white',
     justifyContent:'space-evenly',
     alignItems:'center',
   },
@@ -132,6 +132,14 @@ const styles = StyleSheet.create({
     borderRadius:5,
     height:40,
   },
+  loginInput2: {
+    width: windowWidth - 105,
+    backgroundColor: '#e3e6eb',
+    borderRadius:5,
+    paddingLeft: 10,
+    height:40,
+    marginRight:5
+  },
   image: {
     height: 120,
     width: 120,
@@ -202,6 +210,13 @@ const buttons = StyleSheet.create({
     top: 40,
     zIndex: 1,
     elevation:4,
+  },
+  menu3: {
+    position: 'absolute',
+    left: 10,
+    top: 40,
+    zIndex: 1,
+    elevation:5,
   },
   close: {
     position: 'absolute',

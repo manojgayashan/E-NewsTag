@@ -186,18 +186,21 @@ export default function SingleNews () {
 
 
   const renderNavBar = () => (
-    <View style={{backgroundColor:'white',elevation:2,height:80}}>
+    <View style={{backgroundColor:'white',elevation:5,height:80}}>
         <LinearGradient
           colors={['rgba(0,0,0,0.7)', 'transparent']}
           style={{height: 35}}
         >
-          <Ionicons
+          <TouchableHighlight  style={buttons.menu3} onPress={() => navigation.goBack()}>
+           <Ionicons
         name="arrow-back"
         size={25}
         color={'black'}
-        style={buttons.menu2}
+        // style={buttons.menu3}
         onPress={() => navigation.goBack()}
-      />
+      /> 
+          </TouchableHighlight>
+          
         <Text style={{fontSize:15,fontWeight:'bold',marginTop:35,marginLeft:40,width:windowWidth/1.7}} numberOfLines={2}>{item.title} </Text>
         </LinearGradient>
     </View>
@@ -320,7 +323,10 @@ export default function SingleNews () {
                       style={{marginLeft:20}}
                     />
                   </View>
-        <Text style={[styles.singleInnerText,{textAlign:'justify'}]}>{item.content.replace(/<\/?[^>]+(>|$)/g, ""  ).replace(/&quot;/g,'"').replace(/&zwj;/g,'').replace(/&ldquo;/g,'"').replace(/&rdquo;/g,'"').replace(/&rsquo;/g,`'`).replace(/&#039;/g,`'`).replace(/&lsquo;/g,'')}</Text>
+        <Text style={[styles.singleInnerText,{textAlign:'justify'}]}>
+          {/* {unescape(item.content)} */}
+          {item.content.replace(/<\/?[^>]+(>|$)/g, ""  ).replace(/&quot;/g,'"').replace(/&zwj;/g,'').replace(/&ldquo;/g,'"').replace(/&rdquo;/g,'"').replace(/&rsquo;/g,`'`).replace(/&#039;/g,`'`).replace(/&lsquo;/g,'')}
+          </Text> 
         
         {/* <View style={{backgroundColor: 'gray',height:0.7,marginVertical:5}}  />
         <View style={{alignItems:'flex-end'}}>
@@ -496,6 +502,15 @@ export default function SingleNews () {
     }
     else if (input=='8'){
       return 'Sports';
+    }
+    else if (input=='12'){
+      return 'Weather';
+    }
+    else if (input=='13'){
+      return 'COVID-19';
+    }
+    else if (input=='14'){
+      return 'Local';
     }
   }
 

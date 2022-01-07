@@ -31,6 +31,8 @@ export default function News() {
   const [language, setLanguage] = useState();
   const [category, setCategory] = useState();
   const [error, setError] = useState(false );
+  
+  const [more, setMore] = useState(20);
 
   const lang = useContext(UserContext);
 
@@ -40,8 +42,21 @@ export default function News() {
     getData();
     setError(false)
     setLoading(true)
+    // getBreaking() 
   };
 
+  // function getBreaking() {
+  //   // getData()
+  //   var filted = new Array()
+  //   data.map((item,index) => {
+  //     lang.lang==item.language && item.type =='Breaking_News' && item.status=='A'?(
+  //       filted.push(item)
+  //     ):(null)
+  //   })
+  //   lang.setBreaking(filted.pop());
+  //   // console.log(filted.pop())
+  // }
+  
   const getLanguageData = async () => {
     try {
       const value = await AsyncStorage.getItem('lang');
@@ -54,12 +69,12 @@ export default function News() {
 
   const getData = () => {
     fetch(
-      'https://enewstag.com/api/news/',
+      'https://enewstag.com/api/PopularNews/'+lang.lang,
     )
       .then((response) => response.json())
-      .then((json) => setData(json.reverse()))
+      .then((json) => lang.setPData(json))
       .catch((error) => {setError(true)})
-      .finally(() => {setLoading(false);});
+      .finally(() => {lang.setLoading(false);});
     setRefreshing(false);
     
   };
@@ -140,6 +155,15 @@ function setNewsCategory(input) {
   else if (input=='8'){
     return 'Sports';
   }
+  else if (input=='12'){
+    return 'Weather';
+  }
+  else if (input=='13'){
+    return 'COVID-19';
+  }
+  else if (input=='14'){
+    return 'Local';
+  }
 }
 
   return (
@@ -155,7 +179,7 @@ function setNewsCategory(input) {
         </TouchableOpacity>
         </ScrollView>
         :
-      isLoading && data.length == 0 ? (
+        lang.isLoading || lang.pdata.length == 0 ? (
         <View style={{flex:1,justifyContent:'center',alignItems:'center'}}
         //  animation={'fadeIn'} duration={400}
         // onLayout={()=>{getData();setData(reverseArr(data))}}
@@ -218,13 +242,15 @@ function setNewsCategory(input) {
           }}>
           <FlatList
             refreshing={true}
-            data={data.sort(function (x, y) {return y.views - x.views;})}
+            // onMomentumScrollEnd={()=>setMore(more+10)}
+            data={lang.pdata}
             keyExtractor={({id}, index) => id}
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
             }
-            renderItem={({item}) => (
-              lang.lang==item.language && item.status == 'A'?
+            renderItem={({item,index}) => (
+              // item.language == lang.lang ?
+              index<=more?
               <TouchableHighlight
                 style={{padding: 0}}
                 underlayColor="#DDDDDD"
@@ -247,18 +273,30 @@ function setNewsCategory(input) {
                       </View>
                       <View style={{alignSelf:'flex-end',width:windowWidth - 135,flexDirection:'row',justifyContent: 'space-between'}}>
                         <Text style={styles.innerText}>| {setNewsCategory(item.category_id)}</Text>
-                        <Text style={styles.innerText}>{item.datetime==null?'':Moment(item.datetime).format('D MMM yyyy')}</Text>
+                        <Text style={styles.innerText}>{item.datetime==null?'':Moment(item.datetime).format('D MMM yyyy HH:m') }</Text>
                       </View>
                     </View>
                     
                   </View>
                 </View>
               </TouchableHighlight>
-              :null
+              :
+              index>more && index<=more+1?
+                    <TouchableHighlight style={{alignItems:'center',backgroundColor:'white',padding:5}} underlayColor={'#DDDDDD'} onPress={()=>setMore(more+10)}>
+                      <Text>Show more..</Text>
+                    </TouchableHighlight>:
+                    null
+
+                    // :
+                    // onRefresh()
+
               // getData()null
               
             )}
           />
+          {/* <TouchableHighlight onPress={()=>setMore(more+10)}>
+            <Text>Load More</Text>
+          </TouchableHighlight> */}
         </View>
       )
       }

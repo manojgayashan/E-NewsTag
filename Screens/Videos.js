@@ -70,8 +70,16 @@ export default function Videos () {
     else if (input=='8'){
       return 'Sports';
     }
+    else if (input=='12'){
+      return 'Weather';
+    }
+    else if (input=='13'){
+      return 'COVID-19';
+    }
+    else if (input=='14'){
+      return 'Local';
+    }
   }
-  
 
     return (
       <View style={styles.containerInner}>

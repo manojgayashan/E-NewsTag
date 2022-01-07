@@ -33,7 +33,7 @@ export default function News() {
   const [error, setError] = useState(false );
   const [filtedData, setFilltedData] = useState([]);
   
-  const [view, setView] = useState('');
+  const [today, setToday] = useState(new Date());
 
   const lang = useContext(UserContext);
 
@@ -43,80 +43,68 @@ export default function News() {
     getData();
     setError(false)
     setLoading(true)
-    filtedDataArray()
+    // filtedDataArray()
+    getBreaking()
   };
 
-  const getLanguageData = async () => {
-    try {
-      const value = await AsyncStorage.getItem('lang');
-      if(value !== null) {
-        setLanguage(value);
-      }
-    } catch(e) {
-    }
-  };
+  // const getLanguageData = async () => {
+  //   try {
+  //     const value = await AsyncStorage.getItem('lang');
+  //     if(value !== null) {
+  //       setLanguage(value);
+  //     }
+  //   } catch(e) {
+  //   }
+  // };
 
   const getData = () => {
+    // const value = await AsyncStorage.getItem('lang');
+    // lang.lang==
     fetch(
-      'https://enewstag.com/api/news/',
+      'https://enewstag.com/api/latestNews/',
     )
       .then((response) => response.json())
-      .then((json) => setData(json.reverse()))
+      .then((json) => setData(json))
       .catch((error) => {setError(true)})
       .finally(() => {setLoading(false);});
     setRefreshing(false);
     
+    
   };
 
+  
+
   useEffect(() => {
-    getLanguageData();
+    // getLanguageData();
     
     getData();
-    filtedDataArray()
+    // filtedDataArray()
     return () => {
       getData();
-      getLanguageData();
-      filtedDataArray()
+      // getLanguageData();
+      // filtedDataArray()
     }
     // setData(reverseArr(data))
     
   }, []);
 
-  function reverseArr(input) {
-    var ret = new Array;
-    for(var i = input.length-1; i >= 0; i--) {
-        ret.push(input[i]);
-    }
-    return ret;
-}
 
-function filtedDataArray() {
-  // getData()
-  var filted = new Array()
-  data.map((item,index) => {
-    lang.lang==item.language?(
-      filted.push(item)
-    ):(null)
-  })
-  setRefreshing(false);
 
-  setFilltedData(filted);
 
-    let newsid = 0
-
-    filtedData.map((menu,index) => {
-      index==0?(
-        newsid=(menu.id)
-      ):(null)
-    })
-    setId(newsid)
   
-}
+const getBreaking = () => {
+  // const value = await AsyncStorage.getItem('lang');
+  fetch(
+    'https://enewstag.com/api/breaking/'+lang.lang,
+  )
+    .then((response) => response.json())
+    .then((json) => lang.setBreaking(json))
+    .catch((error) => {setError(true)})
+    .finally(() => {setLoading(false);});
+  // setRefreshing(false);
   
-// const quantityPlus=(item)=>{
-//   let q=item.quantity++
-//   setQty(q-2)
-// }
+};
+
 
 const viewCounter = (item) =>{
   const formData = new FormData()
@@ -174,13 +162,23 @@ function setNewsCategory(input) {
   else if (input=='8'){
     return 'Sports';
   }
+  else if (input=='12'){
+    return 'Weather';
+  }
+  else if (input=='13'){
+    return 'COVID-19';
+  }
+  else if (input=='14'){
+    return 'Local';
+  }
 }
 
   return (
     <View style={styles.containerInner}>
       {error == true?
-        <ScrollView contentContainerStyle={{height:windowHeight-150,justifyContent: 'center',alignItems:'center'}} 
+        <ScrollView contentContainerStyle={{justifyContent: 'center',alignItems:'center'}} 
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} tintColor={'#e12229'} />}
+        nestedScrollEnabled={true}
         >
           <Image source={require('../assets/error.png')} style={{width:80,height:80,tintColor:'rgba(178,178,178,0.7)'}}/>
         <Text style={styles.drawerText}>Network Error</Text>
@@ -284,13 +282,17 @@ function setNewsCategory(input) {
             refreshing={true}
             data={data}
             keyExtractor={({id}, index) => id}
+            initialNumToRender={5}
+            
             refreshControl={
               <RefreshControl refreshing={refreshing} onRefresh={onRefresh}/>
             }
-            renderItem={({item}) => (
+            
+            renderItem={({item , index}) => (
               
-              lang.lang==item.language && item.status == 'A'?
-              item.id==id  ?
+              // item.language==lang.lang && (Moment(item.datetime).format('D MMM yyyy')==Moment(new Date()).subtract(1, 'days').format('D MMM yyyy') || Moment(item.datetime).format('D MMM yyyy') ==Moment(new Date()).format('D MMM yyyy') )?
+              item.language == lang.lang?
+              index==0  ?
               <TouchableHighlight
                 style={{padding: 0}} 
                 underlayColor="#DDDDDD"
@@ -308,8 +310,8 @@ function setNewsCategory(input) {
                         <Text style={[styles.innerText,{color:'gray'}]}> {item.views}</Text>
                       </View>
                       <Text style={styles.innerText}>{item.datetime==null?'':
-                      Moment(item.datetime).format('D MMM yyyy')==Moment(new Date()).format('D MMM yyyy')?Moment(item.datetime).fromNow():
-                      Moment(item.datetime).format('D MMM yyyy HH:m')
+                      // Moment(item.datetime).format('D MMM yyyy')==Moment(new Date()).format('D MMM yyyy')?Moment(item.datetime).fromNow():
+                      Moment(item.datetime).format('D MMM yyyy HH:m') 
                       
                       }</Text>
                       {/* <Text>
@@ -332,7 +334,7 @@ function setNewsCategory(input) {
                 style={{padding: 0}}
                 underlayColor="#DDDDDD"
                 onPress={() => {navigation.navigate('Single', {item: item});viewCounter(item)}}>
-                <View style={styles.newsContainer} onLayout={()=>filtedDataArray()}>
+                <View style={styles.newsContainer} >
                   {item.image ?
                   <Image source={{uri: 'https://enewstag.com/assets/news/images/'+item.image+'.jpg'}} style={styles.image} /> :
                   <Image source={require('../assets/no.jpg')} style={styles.image} />
@@ -352,8 +354,9 @@ function setNewsCategory(input) {
                       <View style={{alignSelf:'flex-end',width:windowWidth - 135,flexDirection:'row',justifyContent: 'space-between'}}>
                         <Text style={[styles.innerText,{color:'#e12229'}]}>{setNewsCategory(item.category_id)}</Text>
                         <Text style={styles.innerText}>{item.datetime==null?'':
-                      Moment(item.datetime).format('D MMM yyyy')==Moment(new Date()).format('D MMM yyyy')?Moment(item.datetime).fromNow():
+                      // Moment(item.datetime).format('D MMM yyyy')==Moment(new Date()).format('D MMM yyyy')?Moment(item.datetime).fromNow():
                       Moment(item.datetime).format('D MMM yyyy HH:m')
+                      
                       
                       }</Text>
                       {/* <Text>{new Date().toUTCString()}</Text> */}
@@ -363,7 +366,9 @@ function setNewsCategory(input) {
                   </View>
                 </View>
               </TouchableHighlight>
-              :null
+              :
+              null
+              // <Text>{lang.lang } {item.language}</Text>
             )}
           />
         </View>

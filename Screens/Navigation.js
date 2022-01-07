@@ -33,25 +33,78 @@ function CustomDrawerContent(props) {
 
     const lang = useContext(UserContext);
     const jumpToAction = TabActions.jumpTo('Home2');
-    const getNewsData = () => {
+
+    
+    const [token, setToken] = useState('');
+
+    const getBreaking = (language) => {
+      
+      lang.setLoading(true)
+
       fetch(
-        'https://enewstag.com/api/news/',
+        'https://enewstag.com/api/breaking/'+language,
       )
         .then((response) => response.json())
-        .then((json) => setData(json))
+        .then((json) => lang.setBreaking(json))
         .catch((error) => {setError(true)})
-        .finally(() => {setLoading(false);});
+        .finally(() => {lang.setLoading(false);});
+      // setRefreshing(false);
+    };
+
+    const getData = (language) => {
+      lang.setData([])
+      lang.setLoading(true)
+      fetch(
+        'https://enewstag.com/api/latestNews/'+language,
+      )
+        .then((response) => response.json())
+        .then((json) => lang.setData(json))
+        .catch((error) => {console.log(error)})
+        .finally(() => {lang.setLoading(false);});
+      // setRefreshing(false);
+    };
+    const getSData = (language) => {
+      lang.setSData([])
+      fetch(
+        'https://enewstag.com/api/suggest/'+language,
+      )
+        .then((response) => response.json())
+        .then((json) => lang.setSData(json))
+        .catch((error) => {setError(true)})
+        .finally(() => {setLoading(false)});
       // setRefreshing(false);
       
     };
-    const getLastBreaking =(language)=>{
-      data.map((news, index)=>
-      language==news.language && news.type =='Breaking_News'?
-      lang.setBreaking(news)
-      :
-      null
-    )
-    }
+    const getPData = (value) => {
+      lang.setPData([])
+      fetch(
+        'https://enewstag.com/api/PopularNews/'+value,
+      )
+        .then((response) => response.json())
+        .then((json) => lang.setPData(json))
+        .catch((error) => {setError(true)})
+        .finally(() => {lang.setLoading(false);});
+      // setRefreshing2(false);
+      
+    };
+
+    const getFirst = (language) => {
+      
+      lang.setLoading(true)
+      lang.setId([])
+      fetch(
+        'https://enewstag.com/api/first/'+language,
+        )
+          .then((response) => response.json())
+          .then((json) => [
+          // console.log(json.id),
+          lang.setId(json)]
+          )
+          .catch((error) => {console.log(error)})
+          .finally(() => {lang.setLoading(false);});
+    };
+
+
 
     const storeData = async (value) => {
       try {
@@ -61,13 +114,47 @@ function CustomDrawerContent(props) {
       }
     };
 
-    // const storeLogData = async (data) => {
-    //   try {
-    //     await AsyncStorage.setItem('log', data);
-    //   } catch (e) {
-    //     // saving error
-    //   }
-    // };
+    const getTok = async () => {
+      try {
+        const value = await AsyncStorage.getItem('tok');
+        if(value !== null) {
+          console.log(value)
+          setToken(value)
+        }
+        if(value == null) {
+          console.log(value)
+        }
+        // console.log("ddddddddddddddddddddddddddf"+value)
+      } catch(e) {
+        // error reading value
+      }
+    };
+
+    function postToken(lang){
+      const data = {language: lang};
+      const formData = new FormData()
+      // console.log('id issssssssssss    '+data.id)
+
+      formData.append('language', lang);
+    // formData.append('token', lang);
+
+            fetch('https://enewstag.com/api/breaking/'+token, {
+              method: 'PUT', // or 'PUT'
+              headers: {
+                'Accept': 'application/json',  // It can be used to overcome cors errors
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(data)
+            })
+            // .then(response => console.log(response.json()))
+            .then(response => response.text())
+            .then(data => {
+              console.log(data);
+            })
+            .catch((error) => {
+              console.log('Error:', error);
+            });
+    }
 
     const storeLogData = async (value) => {
       try {
@@ -78,13 +165,6 @@ function CustomDrawerContent(props) {
       }
     }
 
-    // const storeAccount = async (value) => {
-    //   try {
-    //     await AsyncStorage.setItem('userInfo', value)
-    //   } catch (e) {
-    //     // saving error
-    //   }
-    // }
     const storeAccount = async (value) => {
       try {
         const jsonValue = JSON.stringify(value)
@@ -94,33 +174,28 @@ function CustomDrawerContent(props) {
       }
     }
   
-    
-    const getData = async () => {
+    const storePic = async (value) => {
       try {
-        const value = await AsyncStorage.getItem('lang');
-        if(value !== null) {
-          setLanguage(value);
-          setSelectedLanguage(value);
-        }
-      } catch(e) {
-        // error reading value
+        await AsyncStorage.setItem('pic', value)
+      } catch (e) {
+        // saving error
       }
-    };
+    }
 
     useEffect(() => {
-      getData();
-      getNewsData();
+      getTok();
     }, []);
 
     return (
       <DrawerContentScrollView {...props}>
           <View style={{padding:10,height:200,justifyContent:'space-between'}} >
             
-            {lang.logdata.length==0 ?     
+            {lang.logdata.length==0 || lang.pic==''?
+            // <Text>jjjj</Text>     
                 <Image style={{height:100,width:100,alignSelf:'center'}} source={require('../assets/user.png')}/>
                 :
                 <View style={{elevation:10,height:100,width:100,alignSelf:'center',borderRadius:50}}>
-                  <Image style={{height:100,width:100,alignSelf:'center',borderRadius:50}} source={{uri: lang.logdata.profile_pic}}/>
+                  <Image style={{height:100,width:100,alignSelf:'center',borderRadius:50}} source={{uri: lang.pic}}/>
                 </View>
             }
 
@@ -129,7 +204,7 @@ function CustomDrawerContent(props) {
           {lang.logdata.length==0?
           <Text style={[styles.headerText,{alignSelf:'center'}]}></Text>
           :
-          <Text style={[styles.headerText,{alignSelf:'center'}]}>{lang.logdata.email}</Text>
+          <Text style={[styles.headerText,{alignSelf:'center'}]}>{lang.logdata.fname} {lang.logdata.lname}</Text>
         }
           
           {/* <Image style={{height:20,width:75,alignSelf:'center',marginVertical:10}} source={require('../assets/logo.png')}/> */}
@@ -166,15 +241,16 @@ function CustomDrawerContent(props) {
                 <Picker
                 mode={'dropdown'}
                 style={{ height: 35, width: 120 }}
-                selectedValue={selectedLanguage}
+                selectedValue={lang.lang}
                 onValueChange={(itemValue, itemIndex) =>
-                  {setSelectedLanguage(itemValue); storeData(itemValue); getData();
-                    lang.setLanguage(itemValue);getLastBreaking(itemValue)
+                  {setSelectedLanguage(itemValue); storeData(itemValue);
+                    lang.setLanguage(itemValue);getBreaking(itemValue);getPData(itemValue);getData(itemValue);getSData(itemValue);postToken(itemValue);
                   }
                 }>
                   <Picker.Item value="English" label="English" />
                   <Picker.Item value="Sinhala" label="සිංහල" />
                   <Picker.Item value="Tamil" label="தமிழ்" />
+                  <Picker.Item value="Burmese" label="မြန်မ" />
                 </Picker>
               </View>
               
@@ -226,6 +302,18 @@ function CustomDrawerContent(props) {
             <TouchableHighlight underlayColor={lang.state=='spo'?'#9d151a':"#DDDDDD"} style={[styles.drawerItem,{backgroundColor:lang.state=='spo'?'#e12229':'white'}]} onPress={()=>{props.navigation.navigate('Categories');lang.setState('spo');lang.setCategory('8');setState('8');lang.setCatBack(false)}}>
               <Text style={[styles.drawerText,{color:lang.state=='spo'?'white':'black'}]}>Sports</Text>
             </TouchableHighlight>
+            
+            <TouchableHighlight underlayColor={lang.state=='we'?'#9d151a':"#DDDDDD"} style={[styles.drawerItem,{backgroundColor:lang.state=='we'?'#e12229':'white'}]} onPress={()=>{props.navigation.navigate('Categories');lang.setState('we');lang.setCategory('12');setState('12');lang.setCatBack(false)}}>
+              <Text style={[styles.drawerText,{color:lang.state=='we'?'white':'black'}]}>Weather</Text>
+            </TouchableHighlight>
+            
+            <TouchableHighlight underlayColor={lang.state=='cov'?'#9d151a':"#DDDDDD"} style={[styles.drawerItem,{backgroundColor:lang.state=='cov'?'#e12229':'white'}]} onPress={()=>{props.navigation.navigate('Categories');lang.setState('cov');lang.setCategory('13');setState('13');lang.setCatBack(false)}}>
+              <Text style={[styles.drawerText,{color:lang.state=='cov'?'white':'black'}]}>COVID-19</Text>
+            </TouchableHighlight>
+            
+            <TouchableHighlight underlayColor={lang.state=='loc'?'#9d151a':"#DDDDDD"} style={[styles.drawerItem,{backgroundColor:lang.state=='loc'?'#e12229':'white'}]} onPress={()=>{props.navigation.navigate('Categories');lang.setState('loc');lang.setCategory('14');setState('14');lang.setCatBack(false)}}>
+              <Text style={[styles.drawerText,{color:lang.state=='loc'?'white':'black'}]}>Local</Text>
+            </TouchableHighlight>
             </CollapseBody>
           </Collapse> 
         </View>
@@ -240,7 +328,7 @@ function CustomDrawerContent(props) {
 
         <View style={{backgroundColor:'#303030',height:0.5,marginTop:5,marginBottom:5}} />
         <TouchableHighlight underlayColor={lang.state=='log'?'#9d151a':"#DDDDDD"} style={{flexDirection:'row',alignItems: 'center',justifyContent: 'space-between',backgroundColor:lang.state=='log'?'#e12229':'white'}} 
-        onPress={()=>{props.navigation.navigate('Logout');lang.setState('log');lang.setLogData([]);storeLogData([])}}>
+        onPress={()=>{props.navigation.navigate('Logout');lang.setState('log');lang.setLogData([]);storeLogData([]);lang.setPic('');storePic('')}}>
           <Text style={[styles.drawerText,{color:lang.state=='log'?'white':'black'}]}>{lang.logdata.length==0 ?'Login':'Logout'}</Text>
         </TouchableHighlight>
       </DrawerContentScrollView>
@@ -270,6 +358,7 @@ function MyDrawer() {
     //   // backgroundColor: '#303030',
     //   width: windowWidth/2,
     // }}
+    lazy
     initialRouteName={'Home'} 
     drawerContentOptions={{
       activeTintColor:'black',
@@ -290,6 +379,7 @@ function MyDrawer() {
           return {
             swipeEnabled: routeName == 'Latest',
           };
+          
        }}
         />
         <Drawer.Screen name="Advertise" component={Advertise} />

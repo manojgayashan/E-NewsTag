@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
-import {View, Dimensions , Text , ActivityIndicator, StatusBar, TextInput, TouchableHighlight, ScrollView} from 'react-native';
+import {View, Dimensions , Text , Linking, StatusBar, TextInput, TouchableHighlight, ScrollView , Image} from 'react-native';
 import { styles , buttons } from './Styles';
 import Icon from 'react-native-vector-icons/dist/FontAwesome';
+import Ionicons from 'react-native-vector-icons/dist/Ionicons';
 import { WebView } from 'react-native-webview';
 import {useNavigation} from '@react-navigation/native';
 import {DrawerActions} from '@react-navigation/native';
@@ -26,20 +27,8 @@ export default function Contactus () {
   const [modalVisible, setModalVisible] = useState(false);
   
   const [isModalVisible, setIsModalVisible] = useState(false);
-  const showModal = () => {
-    setIsModalVisible(true);
-    setTimeout(() => {
-      setIsModalVisible(false);
-    }, 1500);
-  };
 
-  const hideSpinner=()=> {
-    setVisible(false)
-  }
 
-  const showSpinner=()=> {
-    setVisible(true)
-  }
   const contactSubmit = (nm,sb,em,mg) =>{
 
     const formData = new FormData()
@@ -57,19 +46,24 @@ export default function Contactus () {
     .then(data => {
       // getuserData(); 
       // setResponse(JSON.parse(data))
-      setResponse2(data)
+      
+      data.trim() =='sent'?
+        setResponse2('sent')
+        :
+        setResponse2('error')
+      
       console.log(data)
       setResponse(JSON.parse(data))
       
     })
     .catch((error) => {
-      Reset()
+      reset()
       // console.error('Error:', error);
     })
     // getuserData();
   }
 
-  const Reset=()=>{
+  const reset=()=>{
     setName('');
     setSub('')
     setEmail('')
@@ -91,9 +85,55 @@ export default function Contactus () {
         />
      
         <ScrollView style={styles.container}>
+
+        {/* <Image style={{alignSelf:'center',marginTop:5,height:45,width:160}} source={require('../assets/contact.jpg')}/> */}
+        <Text style={{color:'#6b6b6b',padding:7.5,fontSize:17,textAlign:'center'}}>
+          {/* Contact us with your suggestions */}
           
+          </Text>
+          <View style={{marginHorizontal:30,flexDirection:'row',justifyContent:'space-between',margin:10}}>
+          {/* <Text style={{color:'#6b6b6b'}} >Share your ideas with us</Text> */}
+          <View style={{flexDirection:'row'}}>
+            <Ionicons
+              name="mail-outline"
+              size={20}
+              color="#e12229"
+            />
+            <View style={{marginLeft:5}}>
+            <Text style={{color:'#6b6b6b',fontWeight:'bold'}}>Email</Text>
+            <Text style={{color:'#6b6b6b'}} onPress={()=>Linking.openURL('mailto:info@enewstag.com')}>info@enewstag.com</Text>   
+            </View>         
+          </View>
+
+          <View style={{flexDirection:'row'}}>
+            <Ionicons
+              name="phone-portrait-outline"
+              size={20}
+              color="#e12229"
+            />
+            <View style={{marginLeft:5}}>
+            <Text style={{color:'#6b6b6b',fontWeight:'bold'}}>Phone</Text>
+            <Text style={{color:'#6b6b6b'}} onPress={()=>Linking.openURL('tel:+9470 585 8000')}>+9470 585 8000</Text>
+            </View>         
+          </View>
+            
+          </View>
+
+          <View style={{
+            backgroundColor:'white',
+            margin:10,
+            shadowColor: "#000",
+            shadowOffset: {
+              width: 0,
+              height: 1,
+            },
+            shadowOpacity: 0.22,
+            shadowRadius: 2.22,
+
+            elevation: 3,
+            }}>
           <TextInput
-            style={[styles.loginInput,{marginHorizontal: 20,marginVertical:5,marginTop:20}]}
+            style={[styles.loginInput,{marginHorizontal: 10,marginVertical:5,marginTop:10}]}
             placeholder="Your Name"
             onChangeText={(text) => setName(text)}
             value={name}
@@ -105,7 +145,7 @@ export default function Contactus () {
           }
           
           <TextInput
-            style={[styles.loginInput,{marginHorizontal: 20,marginVertical:5}]}
+            style={[styles.loginInput,{marginHorizontal: 10,marginVertical:5}]}
             placeholder="Your Email"
             onChangeText={(text) => setEmail(text)}
             value={email}
@@ -116,7 +156,7 @@ export default function Contactus () {
             response.your_email=='The Email field is required.'?<Text style={styles.ValidationText}>*{response.your_email}</Text>:null
           }
           <TextInput
-            style={[styles.loginInput,{marginHorizontal: 20,marginVertical:5}]}
+            style={[styles.loginInput,{marginHorizontal: 10,marginVertical:5}]}
             placeholder="Subject"
             onChangeText={(text) => setSub(text)}
             value={sub}
@@ -127,7 +167,7 @@ export default function Contactus () {
             response.your_subject=='The Subject field is required.'?<Text style={styles.ValidationText}>*{response.your_subject}</Text>:null
           }
           <TextInput
-            style={[styles.loginInput,{height:100,marginHorizontal: 20,marginVertical:5}]}
+            style={[styles.loginInput,{height:100,marginHorizontal: 10,marginVertical:5}]}
             placeholder="Your Message"
             textAlignVertical={'top'}
             onChangeText={(text) => setMsg(text)}
@@ -140,49 +180,46 @@ export default function Contactus () {
           {
             response.your_message=='The Message field is required.'?<Text style={styles.ValidationText}>*{response.your_message}</Text>:null
           }
-          <TouchableHighlight onPress={()=>{setResponse('');contactSubmit(name,sub,email,msg);Reset();showModal()}} style={{backgroundColor:'red',alignSelf:'flex-end',marginRight:20,marginTop:10,paddingHorizontal:10,paddingVertical:5,elevation:2,borderRadius:5}}>
-            <Text style={{color:'white'}}>Submit</Text>
+          <TouchableHighlight onPress={()=>{setResponse('');contactSubmit(name,sub,email,msg);}} style={{backgroundColor:'#e12229',alignSelf:'flex-end',margin:10,height:50,width:50,alignItems:'center',justifyContent:'center',elevation:2,borderRadius:50}}>
+          <Ionicons
+              name="send"
+              size={25}
+              color="#fff"
+            />
           </TouchableHighlight>
+          </View>
+          
 
-          <Modal2
-          isVisible={isModalVisible}
-          style={{zIndex: 3,elevation:1,}}
-          hasBackdrop={false}
-          animationIn={'fadeIn'}
-          animationOut={'fadeOut'}
-          onBackdropPress={()=>showModal()}
-          >
-            <View style={{bottom:80,position:'absolute',alignSelf:'center',elevation:2}}>
-                    {response2.trim()=='sent'?
-                    <View style={{backgroundColor:'green',padding:10,elevation:2,alignSelf:'center',position:'absolute'}} >
-                      <Text style={[styles.innerText,{color:'white'}]}>Message Sent</Text>
-                    </View>
-                    :
-                    <Text></Text>
-                    }
-
-            </View>
-
-          </Modal2>
-
-          {/* <WebView
-            style={{ marginTop: -220, marginBottom:-1800 }}  
-            source={{ uri: 'https://enewstag.com/web/contactus' }} 
-            onLoadStart={() => showSpinner()}
-            onLoadEnd={() => hideSpinner()}
-            /> */}
-
+          {
+              response2=="sent"?
+              <View style={{backgroundColor:'green',padding:10,alignSelf:'center',top:40,position:'absolute',elevation:5}} 
+                onLayout={()=>
+                  setTimeout(() => {
+                    setResponse2("")
+                    reset() 
+                  }, 800)
+                }
+                >
+                  <Text style={[styles.innerText,{color:'white'}]}>Message Sent</Text>
+                </View>
+              :
+              response2 == "error"?
+              <View style={{backgroundColor:'red',padding:10,alignSelf:'center',top:40,position:'absolute',elevation:5}} 
+                onLayout={()=>
+                  setTimeout(() => {
+                    setResponse2("") 
+                    reset()
+                  }, 800)
+                }
+                >
+                  <Text style={[styles.innerText,{color:'white'}]}>Fill All Fields</Text>
+                </View>
+                :
+                null
+            }
 
 
         </ScrollView>
-
-        {/* {visible && (
-          <View style={{flex:1,justifyContent: 'center',marginTop:windowHeight}}>
-            <View style={{marginTop:-windowHeight/1.7}}>
-            <ActivityIndicator size={45} color="#e12229"/>
-            </View>
-          </View>
-        )}  */}
 
       </View>
 

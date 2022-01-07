@@ -43,6 +43,7 @@ function LatestScreen () {
     const [logged, setLogged] = useState();
     const [isLoading, setLoading] = useState(true);
     const [data, setData] = useState([]);
+    const [result, setResult] = useState([]);
     const [refreshing, setRefreshing] = React.useState(false);
     const [activeSlide, setActiveSlide] = useState();
     const [cat, setCategory] = useState('');
@@ -51,47 +52,30 @@ function LatestScreen () {
     
     // const {search} = route.params;
     const lang = useContext(UserContext);
-    const getData = async () => {
-      try {
-        // eslint-disable-next-line no-shadow
-        const value = await AsyncStorage.getItem('lang');
-        if (value !== null) {
-          setLanguage(value);
-        }
-      } catch (e) {}
-    };
 
-    const getLogData = async () => {
-      try {
-        // eslint-disable-next-line no-shadow
-        const data = await AsyncStorage.getItem('log');
-        if (data !== null) {
-          setLogged(data);
-        }
-      } catch (e) {}
-    };
 
-    const getNews = () => {
-        fetch(
-          'https://enewstag.com/api/news',
-        )
-          .then((response) => response.json())
-          .then((json) => setData(json))
-          .catch((error) => console.error(error))
-          .finally(() => setLoading(false));
-        setRefreshing(false);
-      };
 
+
+
+
+    const getSearch = () => {
+            fetch(
+              'https://enewstag.com/api/search/'+lang.lang,
+            )
+              .then((response) => response.json())
+              .then((json) => setResult(json))
+              .catch((error) => console.error(error))
+              .finally(() => setLoading(false));
+            setRefreshing(false);
+          };
+      
     useEffect(() => {
-      getData();
-      getLogData();
-      getNews();
       setCategory('1')
-      setValue(lang.search)
+      getSearch()
     //   getData();
 
     setDidMount(true);
-    return () => {setDidMount(false);getData();};
+    return () => {setDidMount(false);getSearch()};
 
     }, []);
 
@@ -102,16 +86,8 @@ function LatestScreen () {
     const onRefresh = () => {
         setRefreshing(true);
         setData([]);
-        getNews();
       };
 
-      function reverseArr(input) {
-        var ret = new Array;
-        for(var i = input.length-1; i >= 0; i--) {
-            ret.push(input[i]);
-        }
-        return ret;
-    }
     function searchCondition(input) {
       var lowerTitle = input.title.toLowerCase();
       var lowerContent = input.content.toLowerCase();
@@ -142,7 +118,7 @@ function LatestScreen () {
         <TextInput
           style={[styles.searchBarInput,{width:windowWidth-80,backgroundColor:'#eaeaea',}]}
           placeholder="Looking for.."
-          onChangeText={(text) => setValue(text)}
+          onChangeText={(text) => {setValue(text)}}
           value={value}
           autoFocus={true}
         />
@@ -167,7 +143,7 @@ function LatestScreen () {
                     <Text style={[styles.headerText,{color:'gray'}]}>Search anything...</Text>
                     </View>
             ) : (
-              data.length == 0 ?
+              result.length == 0 ?
                   <View>
                   </View>
                   :
@@ -178,15 +154,18 @@ function LatestScreen () {
                     justifyContent: 'space-between',
                 }}>
                   
-                  <FlatList
-                    refreshing={true}
-                    data={data.reverse()}
-                    keyExtractor={({id}, index) => id}
+                  <ScrollView
                     refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                     }
-                    renderItem={({item}) => (
-                      searchCondition(item) && lang.lang==item.language ?
+                >
+                  <View>
+                    <View style={{padding:10}}>
+                    <Text style={{color:'gray',fontWeight:'bold',fontSize:16}}>Results for "{value}"</Text>
+                    </View>
+                  {result.map((item,index) => (
+                    searchCondition(item) ?
+                    <View key={index}>
                     <TouchableHighlight
                         style={{padding: 0}}
                         underlayColor="#DDDDDD"
@@ -200,17 +179,17 @@ function LatestScreen () {
                             <Text style={[styles.headerText]} numberOfLines={4}>{item.title}</Text>
                             <View style={{alignSelf:'flex-end'}}>
                             <Text style={styles.innerText}>
-                                {item.datetime==null?'':Moment(item.datetime).format('D MMM yyyy')}
+                                {item.datetime==null?'':Moment(item.datetime).format('D MMM yyyy HH:m') }
                             </Text>
                             </View>
                         </View>
                         </View>
                     </TouchableHighlight>
+                    </View>
                     :null
-                    // :<Text>{lang.search}</Text>
-                    )}
-                />
-                  
+                    ))}
+                    </View>
+                </ScrollView>  
                 
                 </View>
             )} 
@@ -230,18 +209,7 @@ const Stack = createStackNavigator();
 function MyStack() {
 // eslint-disable-next-line no-unused-vars
 const [logged, setLogged] = useState();
-const getLogData = async () => {
-    try {
-    const data = await AsyncStorage.getItem('log');
-    if (data !== null) {
-        setLogged(data);
-    }
-    } catch (e) {}
-};
 
-useEffect(() => {
-    getLogData();
-}, []);
 
 return (
     <Stack.Navigator initialRouteName={'Home'}>

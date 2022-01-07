@@ -1,4 +1,4 @@
-import React, {useState, useEffect , useContext} from 'react';
+import React, {useState, useEffect , useContext, useRef} from 'react';
 import {
   View,
   Text,
@@ -9,7 +9,7 @@ import {
   RefreshControl,
   TouchableHighlight,
   Image,
-  Pressable,
+  Button,
   ImageBackground,
   ScrollView,
 } from 'react-native';
@@ -31,6 +31,7 @@ import { Dummy } from "./Dummy";
 import Shimmer from 'react-native-shimmer';
 import Moment from 'moment';
 import {UserContext}  from '../context/Context';
+import RBSheet from "react-native-raw-bottom-sheet";
 
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
@@ -39,7 +40,7 @@ function Category () {
     const navigation = useNavigation();
 
     const [fail, setFail] = useState('');
-
+    const refRBSheet = useRef();
     const [subscribed, setsubscribed] = useState('');
 
     const [isLoading, setLoading] = useState(true);
@@ -47,13 +48,24 @@ function Category () {
     const [sub, setSub] = useState([]);
     const [refreshing, setRefreshing] = React.useState(false);
 
-    // const route = useRoute();
+    const [more, setMore] = useState(20);
     
-    // const {loveOne} = route.params;
+    const [language, setLanguage] = useState('');
+
+    const route = useRoute();
+    
+    // const {id} = route.params;
     const lang = useContext(UserContext);
 
     const [didMount, setDidMount] = useState(false); 
     const [state, setState] = useState({});
+
+    const [isModalVisible, setModalVisible] = useState(false);
+
+    const toggleModal = () => {
+      setModalVisible(!isModalVisible);
+    };
+
 
     const viewCounter = (item) =>{
       const formData = new FormData()
@@ -62,8 +74,6 @@ function Category () {
       // setView(views)
       // formData.append('views', views);
       const data = {views: views+1};
-    
-    
       
       fetch('https://enewstag.com/api/news/'+item.id+'', {
         method: 'PUT', // or 'PUT'
@@ -87,19 +97,28 @@ function Category () {
     } 
 
     const getNews = () => {
+      lang.setLoading(true)
         fetch(
-          'https://enewstag.com/api/news',
+          'https://enewstag.com/api/CategoryNews/'+lang.cat+'/'+lang.lang,
         )
           .then((response) => response.json())
-          .then((json) => setData(json.reverse()))
+          .then((json) => {
+           setData(json) 
+           console.log(lang.lang)
+          }
+          
+          
+          )
           .catch((error) => console.error(error))
-          .finally(() => setLoading(false));
+          .finally(() => lang.setLoading(false));
         setRefreshing(false);
+        console.log(lang.cat)
+        setLanguage(lang.lang)
       };
 
-      const getSub = () => {
+      const getSubs = (cat) => {
         fetch(
-          'https://enewstag.com/api/subscribe',
+          'https://enewstag.com/api/subscribe2/'+cat+'/'+lang.logdata.email,
         )
           .then((response) => response.json())
           .then((json) => 
@@ -115,7 +134,9 @@ function Category () {
 
     useEffect(() => {
       getNews();
-      getSub()
+      getSubs(lang.cat)
+      
+      // getSubs()
     }, []);
 
 
@@ -124,13 +145,14 @@ function Category () {
         setRefreshing(true);
         setData([]);
         getNews();
-        
-
+        getSubs(lang.cat)
+        console.log(lang.lang)
       }
       
       ;
 
     function setNewsCategory(input) {
+      
       if (input=='1'){
         return 'World';
       }
@@ -155,17 +177,43 @@ function Category () {
       else if (input=='8'){
         return 'Sports';
       }
+      else if (input=='12'){
+        return 'Weather';
+      }
+      else if (input=='13'){
+        return 'COVID-19';
+      }
+      else if (input=='14'){
+        return 'Local';
+      }
+      
+    }
+
+    function setLang(input) {
+      
+      if (input=='Sinhala'){
+        return '1';
+      }
+      else if (input=='Tamil'){
+        return '2';
+      }   
+      else if (input=='English'){
+        return '3';
+      } 
+      else{
+        return '4';
+      }   
     }
 
 
-    const onSubscribe = (em,ct) =>{
+    const onSubscribe = (em,ct,un) =>{
 
       const formData = new FormData()
   
       formData.append('email', em);
       formData.append('category', ct);
      
-      fetch('https://enewstag.com/api/subscribe/', {
+      fetch('https://enewstag.com/api/subscribe2/'+un, {
         method: 'POST', // or 'PUT'
         body: formData
       })
@@ -173,8 +221,13 @@ function Category () {
       .then(data => {
         // getuserData(); 
         
-        setFail(data.trim())
-        console.log(fail)
+        setFail(data)
+        if (un=="sub"){
+          refRBSheet.current.open()
+        }
+        
+        console.log(data)
+        getSubs(lang.cat)
       })
       .catch((error) => {
         console.error('Error:', error);
@@ -211,13 +264,21 @@ function Category () {
       }
       <View style={{flexDirection:'row',paddingTop:38,paddingStart:lang.catBack==true?50:25,alignItems:'center',justifyContent:'space-between'}}>
    
-          <Text style={[styles.mainHeader2]}>{setNewsCategory(lang.cat)} News</Text>
+          <Text style={[styles.mainHeader2]} onLayout={()=>{onRefresh();getSubs(lang.cat);setLanguage(lang.lang);getNews();}}>{setNewsCategory(lang.cat)} News </Text>
         
+        {/* <View onLayout={onRefresh} > */}
+          <Text onLayout={onRefresh} style={{fontSize:2,color:'white'}}>{lang.lang}</Text>
+        {/* </View> */}
+
         {lang.logdata.length==0?null:
 
-        
-        <TouchableHighlight onPress={()=>onSubscribe(lang.logdata.email,lang.cat)} underlayColor={'#9d151a'} style={{marginRight:60,backgroundColor: 'red',paddingHorizontal: 10,paddingVertical:2,elevation:2,zIndex:1,borderRadius: 5,}}>
-          <Text style={{color:'white',}}>Subscribe</Text>
+        sub.length==0?
+        <TouchableHighlight onPress={()=>onSubscribe(lang.logdata.email,lang.cat,"sub")} underlayColor={'#9d151a'} style={{marginRight:40,backgroundColor: 'red',paddingHorizontal: 10,paddingVertical:3,elevation:2,zIndex:1,borderRadius: 5,}}>
+          <Text style={{color:'white',fontSize:16}}>Subscribe</Text>
+        </TouchableHighlight>
+        :
+        <TouchableHighlight onPress={()=>onSubscribe(lang.logdata.email,lang.cat,"un")}  underlayColor={'#9d151a'} style={{marginRight:40,backgroundColor: 'red',paddingHorizontal: 10,paddingVertical:3,elevation:2,zIndex:1,borderRadius: 5,}}>
+          <Text style={{color:'white',fontSize:16}}>Unsubscribe</Text>
         </TouchableHighlight>
         }
 
@@ -232,32 +293,45 @@ function Category () {
          
         <View style={styles.containerInner}>
 
-        {fail=='error'?
-        <View style={{backgroundColor:'red',padding:5,elevation:5,alignSelf:'center',bottom:20,position:'absolute'}} 
-        
-        onLayout={()=>
-        setTimeout(() => {
-          setFail('')
-        }, 800)
-          
-        }>
-          <Text style={[styles.innerText,{color:'white'}]}>Already Registered</Text>
-        </View>
-        :
-        fail=='successEmail sent.'?
-        <View style={{backgroundColor:'green',padding:5,alignSelf:'center',bottom:20,position:'absolute',}} 
-        onLayout={()=>
-          setTimeout(() => {
-            setFail('')
-          }, 800)
-        }
-        >
-          <Text style={[styles.innerText,{color:'white'}]}>Subscribed</Text>
-        </View>
-        :
-        null
-        }
-        
+
+      <RBSheet
+        ref={refRBSheet}
+        keyboardAvoidingViewEnabled={true}
+        height={windowHeight/1.67}
+        dragFromTopOnly={true}
+        closeOnDragDown={true}
+        closeOnPressMask={true}
+        customStyles={{
+          wrapper: {
+            backgroundColor: "rgba(0,0,0,0.1)"
+          },
+          draggableIcon: {
+            backgroundColor: "gray"
+          },
+          container: {
+            borderTopLeftRadius: 10,
+            borderTopRightRadius: 10,
+            elevation:25
+          }
+        }}
+      >
+        <ScrollView style={{padding:10}}>
+        <Image style={{alignSelf:'center',marginVertical:15,height:40,width:140}} source={require('../assets/logo.png')}/>
+          <Text style={{color:'#6a7075',fontSize:16,lineHeight:25}}>Dear User, 
+          {'\n'}{'\n'}{'\t'}Thank you for subscribing to our newsletter! We will keep you update with latest news via email.
+          {/* {'\n'}Check your {lang.logdata.email} inbox. */}
+          {'\n'}
+          {'\n'}Thank you, 
+          {'\n'}Team Enewstag.
+           </Text>
+           <TouchableHighlight onPress={()=>refRBSheet.current.close()} style={{backgroundColor:'#9d151a',padding:5,alignSelf:'flex-end',paddingHorizontal:20,borderRadius:5}}>
+             <Text style={{color:'white'}} >Ok</Text>
+           </TouchableHighlight>
+
+        </ScrollView>
+      </RBSheet>
+
+
                 {isLoading || data.length == 0 || refreshing==true?  (
                 <Animatable.View style={{flex:1,justifyContent:'center',alignItems:'center'}}
                  >
@@ -265,7 +339,7 @@ function Category () {
                     data={Dummy}
                     keyExtractor={({id}, index) => id}
                     renderItem={({item}) => (
-                        <View style={styles.newsContainer}>
+                        <View style={styles.newsContainer} >
                           <Shimmer opacity={0.9} duration={1000}>
                             <View style={[styles.image,{backgroundColor:'#cfcfcf'}]}/>
                           </Shimmer>
@@ -312,10 +386,9 @@ function Category () {
                     refreshControl={
                     <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
                     }
-                    renderItem={({item}) => (
+                    renderItem={({item,index}) => (
 
-                      
-                       lang.lang==item.language && lang.cat==item.category_id && item.status == 'A'?
+                      index<=more?
                     <TouchableHighlight
                         style={{padding: 0}}
                         underlayColor="#DDDDDD"
@@ -336,16 +409,18 @@ function Category () {
                                 />
                                 <Text style={[styles.innerText,{color:'gray'}]}> {item.views}</Text>
                               </View>
-                              <Text style={styles.innerText}>{item.datetime==null?'':Moment(item.datetime).format('D MMM yyyy')}</Text>
+                              <Text style={styles.innerText}>{item.datetime==null?'':Moment(item.datetime).format('D MMM yyyy HH:m') }</Text>
                               </View>
                             
                         </View>
                         </View>
                     </TouchableHighlight>
                     :
-                   <View style={{height:0.05}} onLayout={()=>lang.setCategory(lang.cat)}>
-                     <Text style={{color:'#eaeaea'}}>{lang.cat}</Text>
-                   </View>
+                    index>more && index<=more+1?
+                    <TouchableHighlight style={{alignItems:'center',backgroundColor:'white',padding:5}} underlayColor={'#DDDDDD'} onPress={()=>setMore(more+10)}>
+                      <Text>Show more..</Text>
+                    </TouchableHighlight>:
+                    null
                     )}
                 />
                   

@@ -93,7 +93,7 @@ export default function Advertise () {
   const INJECTED_JAVASCRIPT =
   `const meta = document.createElement('meta'); 
   meta.setAttribute('content', 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0'); 
-  meta.setAttribute('name', 'viewport'); 
+  meta.setAttribute('name', 'viewport');
   document.getElementsByTagName('head')[0].appendChild(meta); 
   (function() {
       window.ReactNativeWebView.postMessage(document.title);
@@ -305,9 +305,9 @@ export default function Advertise () {
               
             </TouchableHighlight>
           </ScrollView> */
-            <View style={{flex:1}}>
+            // <ScrollView>
           <WebView
-              style={{ marginTop:title=='ENEWSTAG' || ''? -220:0, marginBottom:0}}  
+              style={{ marginTop:title=='ENEWSTAG' || ''? -220:0}}  
               source={{
                 uri: 'https://enewstag.com/web/banner',
                 headers: {
@@ -320,8 +320,9 @@ export default function Advertise () {
               onLoadStart={() => showSpinner()}
               onLoadEnd={() => hideSpinner()}
               injectedJavaScript={INJECTED_JAVASCRIPT}
+              // containerStyle={{  }}
                />
-               </View>
+              // </ScrollView>
         
             }
 
